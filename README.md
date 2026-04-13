@@ -11,7 +11,6 @@ A private enterprise agent registry built on Squad SDK that enables teams to dis
 - **Agent Installation with Version Pinning**: Install agents from the registry with exact version pinning and dependency resolution. Prevents unexpected downgrades and ensures reproducible environments.
 - **Semver Versioning & Upgrades**: Manage agent versions using semantic versioning. Check compatibility, list available upgrades, and safely upgrade or rollback to previous versions.
 - **Trust Scores**: Calculate trust ratings based on security scan results, author reputation, and usage metrics. Verify publisher identity and track trust history.
-- **Preview Sandbox**: Test agents in temporary environments before installation. Generate preview reports showing capabilities, permissions, and potential warnings.
 - **Agent Composition**: Combine multiple agents into team templates for cohesive multi-agent workflows.
 
 ## Architecture
@@ -56,6 +55,12 @@ A private enterprise agent registry built on Squad SDK that enables teams to dis
 │ Manager │  │ Scoring   │  │ Sandbox    │
 └─────────┘  └───────────┘  └────────────┘
 ```
+
+> **Note:** This is a standalone implementation that demonstrates marketplace patterns (packaging, registry, security scanning, trust scoring) which could integrate with Squad SDK's marketplace module. It does not import or depend on the Squad SDK at runtime — all functionality is self-contained to serve as a reference architecture.
+
+## Roadmap
+
+- **Preview Sandbox**: Test agents in temporary environments before installation. Generate preview reports showing capabilities, permissions, and potential warnings. *(Not yet implemented)*
 
 ## SDK Modules Reference
 
@@ -244,7 +249,7 @@ npm run test:coverage
 - 📋 Trust Scores
 
 ### Phase 3: Advanced Features (P2)
-- 📋 Preview Mode (Sandbox)
+- 📋 Preview Mode (Sandbox) — *see Roadmap*
 - 📋 Agent Composition
 
 ## Support

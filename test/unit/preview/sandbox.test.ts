@@ -2,15 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { PreviewSandbox } from '../../../src/preview/sandbox';
 
 describe('PreviewSandbox', () => {
-  it('should create ephemeral sandbox environment', () => {
-    // TODO: Implement test
+  it.skip('should create ephemeral sandbox environment (not yet implemented)', () => {
+    // Preview sandbox is on the roadmap but not yet implemented
   });
 
-  it('should not persist agent to .squad/ after preview', () => {
-    // TODO: Implement test
+  it.skip('should not persist agent to .squad/ after preview (not yet implemented)', () => {
+    // Preview sandbox is on the roadmap but not yet implemented
   });
 
-  it('should cleanup sandbox directory', () => {
-    // TODO: Implement test
+  it.skip('should cleanup sandbox directory (not yet implemented)', () => {
+    // Preview sandbox is on the roadmap but not yet implemented
   });
 });

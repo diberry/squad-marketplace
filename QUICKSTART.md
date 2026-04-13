@@ -271,22 +271,30 @@ tar -tzf hello-agent-1.0.0.tar.gz | head -10
 
 ### Step 5: Publish to Registry
 
-Upload your agent package to the registry (backed by GitHub Releases):
+Upload your agent package to the registry (backed by GitHub Releases).
+
+The `AgentPublisher` constructor requires three collaborator objects — a packager, a security scanner, and a registry client:
 
 ```bash
 cat > publish-agent.js << 'EOF'
 import { AgentPublisher } from './dist/registry/publisher.js';
+import { AgentPackager } from './dist/package/packager.js';
+import { SecurityScanner } from './dist/security/scanner.js';
+import { GitHubRegistry } from './dist/registry/github-registry.js';
 
-const publisher = new AgentPublisher({
+const packager = new AgentPackager();
+const scanner = new SecurityScanner();
+const registry = new GitHubRegistry({
   githubToken: process.env.GITHUB_TOKEN,
   registryOwner: process.env.GITHUB_REGISTRY_OWNER,
   registryRepo: process.env.GITHUB_REGISTRY_REPO
 });
 
-const result = await publisher.publish({
-  packagePath: './hello-agent-1.0.0.tar.gz',
-  manifestPath: './my-first-agent/manifest.json'
-});
+const publisher = new AgentPublisher(packager, scanner, registry);
+
+// publish() takes the agent directory path and handles
+// packaging, scanning, and uploading in one step
+const result = await publisher.publish('./my-first-agent');
 
 console.log('Published successfully:');
 console.log(JSON.stringify(result, null, 2));
@@ -558,15 +566,18 @@ console.log('Packaged');
 # 5. Publish
 node -e "
 import { AgentPublisher } from './dist/registry/publisher.js';
-const pub = new AgentPublisher({
+import { AgentPackager } from './dist/package/packager.js';
+import { SecurityScanner } from './dist/security/scanner.js';
+import { GitHubRegistry } from './dist/registry/github-registry.js';
+const packager = new AgentPackager();
+const scanner = new SecurityScanner();
+const registry = new GitHubRegistry({
   githubToken: process.env.GITHUB_TOKEN,
   registryOwner: process.env.GITHUB_REGISTRY_OWNER,
   registryRepo: process.env.GITHUB_REGISTRY_REPO
 });
-const r = await pub.publish({
-  packagePath: './demo-1.0.0.tar.gz',
-  manifestPath: './demo-agent/manifest.json'
-});
+const pub = new AgentPublisher(packager, scanner, registry);
+const r = await pub.publish('./demo-agent');
 console.log('Published:', r.name, r.version);
 "
 

@@ -77,4 +77,6 @@ A generic package manager can't enforce agent-specific security policies. Buildi
 
 ---
 
-**Project Status:** MVP (Phase 1) specification complete. Ready for implementation with Squad SDK marketplace, packaging, security, and install modules.
+**Note:** This project is a standalone reference implementation. It demonstrates marketplace patterns (packaging, registry, security scanning, trust scoring) that could integrate with Squad SDK's marketplace module but does not import or depend on the Squad SDK at runtime.
+
+**Project Status:** MVP (Phase 1) specification complete. Preview sandbox is planned but not yet implemented (see README Roadmap).
