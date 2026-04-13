@@ -1,65 +1,49 @@
-# Squad SDK Agent Marketplace — Quick Start Guide
+# Squad SDK Agent Marketplace — Quick Start
 
-Get up and running with agent publishing, discovery, and installation in 15 minutes.
+Get an agent published and installed in 5 steps. No code writing required.
 
 ## Prerequisites
 
-Before you start, make sure you have:
+- **Node.js** 18+ (`node --version`)
+- **npm** 8+ (`npm --version`)
+- **Git** (`git --version`)
+- **GitHub account** with a Personal Access Token (PAT)
+  - Generate at: https://github.com/settings/tokens?type=beta
+  - Scopes: `repo`, `write:packages`
 
-- **Node.js** 18+ and **npm** 8+ installed
-  ```bash
-  node --version  # v18.0.0+
-  npm --version   # 8.0.0+
-  ```
-- **Git** installed for registry operations
-  ```bash
-  git --version
-  ```
-- A **GitHub account** with access to create repositories
-- A **GitHub Personal Access Token** (PAT) with `repo`, `write:packages` scope
-  ```bash
-  # Generate one at: https://github.com/settings/tokens?type=beta
-  # Save it as: export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
-  ```
-
-## Initial Setup (One-Time)
+## Setup
 
 ### 1. Clone and Install
 
 ```bash
 git clone https://github.com/your-org/squad-sdk-example-marketplace.git
 cd squad-sdk-example-marketplace
-
 npm install
 npm run build
+```
+
+**Verify:**
+```bash
 npm run test
 ```
 
-**Expected output:**
+You should see test results like:
 ```
-> npm run test
- ✓ test/unit/manifest/validator.test.ts (5 tests)
- ✓ test/unit/package/packager.test.ts (3 tests)
- ✓ test/unit/security/scanner.test.ts (4 tests)
- ✓ test/unit/registry/index-manager.test.ts (2 tests)
- [... more tests ...]
- Test Files  28 passed (28)
- Tests      156 passed (156)
+Test Files  28 passed (28)
+Tests      156 passed (156)
 ```
 
-### 2. Set Up Your Private Registry
-
-Create a GitHub repository to host your agent registry:
+### 2. Create Your Registry (One-Time)
 
 ```bash
-# Create the registry repository
+# Create a new GitHub repo for the registry
 gh repo create my-agent-registry --private --description "Private Agent Marketplace"
 
-# Clone it locally
+# Clone it
 git clone https://github.com/your-org/my-agent-registry.git
 cd my-agent-registry
 
-# Initialize registry structure
+# Initialize registry
 mkdir -p .registry
 cat > .registry/agents.json << 'EOF'
 {
@@ -71,212 +55,153 @@ cat > .registry/agents.json << 'EOF'
 }
 EOF
 
-# Commit and push
 git add .registry/agents.json
 git commit -m "Initialize agent registry"
 git push origin main
+cd ..
 ```
 
-### 3. Configure Your Environment
+### 3. Set Environment Variables
 
 ```bash
-# Set your GitHub credentials (required for publish/install operations)
 export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 export GITHUB_REGISTRY_OWNER=your-org
 export GITHUB_REGISTRY_REPO=my-agent-registry
 ```
 
-For persistent configuration, add these to your `.bashrc`, `.zshrc`, or shell profile.
+Add to your shell profile (`.bashrc`, `.zshrc`, etc.) for persistence.
 
 ---
 
-## Walkthrough 1: Publish Your First Agent
+## Step 1: Create an Agent Manifest
 
-### Step 1: Create an Agent Directory
-
-Create a new agent with manifest, charter, and skills:
+Create a directory for your agent:
 
 ```bash
-mkdir my-first-agent
-cd my-first-agent
+mkdir my-test-agent
+cd my-test-agent
+```
 
-# Create manifest
-cat > manifest.json << 'EOF'
+Create `manifest.json`:
+
+```json
 {
-  "name": "hello-agent",
+  "name": "test-agent",
   "version": "1.0.0",
   "author": "your-name",
-  "description": "Simple greeting agent for testing",
+  "description": "A simple test agent",
   "skills": {
-    "text-formatter": "^1.0.0"
+    "text-processor": "^1.0.0"
   },
   "config": {
     "timeout": 30000
   }
 }
-EOF
+```
 
-# Create charter (describe what your agent does)
-cat > charter.md << 'EOF'
-# Hello Agent Charter
+Create `charter.md`:
 
-## Purpose
-A simple demonstration agent that greets users and formats messages.
+```markdown
+# Test Agent
+
+A demonstration agent for testing the marketplace.
 
 ## Capabilities
-- **Greeting**: Personalized greetings
-- **Formatting**: Text transformation and markup
+- Text processing
+- Simple transformations
 
 ## Permissions
-- Read public data only
+- Read-only access
+- No network calls
 - No file system access
-- No external API calls
+```
 
-## Version
-1.0.0 - Initial release for testing
-EOF
+Create the required directories:
 
-# Create skills directory structure
+```bash
 mkdir -p skills config
 touch skills/.gitkeep config/.gitkeep
 ```
 
-**Expected directory:**
+**Your agent directory should look like:**
 ```
-my-first-agent/
+my-test-agent/
 ├── manifest.json
 ├── charter.md
 ├── skills/
+│   └── .gitkeep
 └── config/
+    └── .gitkeep
 ```
 
-### Step 2: Validate Your Manifest
+---
 
-From the marketplace project root, validate your agent:
+## Step 2: Package Your Agent
+
+From the marketplace directory:
 
 ```bash
-# Build the validation tool (if not already done)
 npm run build
 
-# Create a test script to validate
-cat > validate-agent.js << 'EOF'
-import { ManifestValidator } from './dist/manifest/validator.js';
-import * as fs from 'fs';
-
-const manifest = JSON.parse(fs.readFileSync('./my-first-agent/manifest.json', 'utf8'));
-const validator = new ManifestValidator();
-const result = validator.validate(manifest);
-console.log('Validation result:', result);
-EOF
-
-node validate-agent.js
+node -e "
+import { AgentPackager } from './dist/package/packager.js';
+const packager = new AgentPackager();
+await packager.package('../my-test-agent', './test-agent-1.0.0.tar.gz');
+console.log('Agent packaged');
+"
 ```
 
-**Expected output:**
-```
-Validation result: {
-  valid: true,
-  manifest: {
-    name: 'hello-agent',
-    version: '1.0.0',
-    author: 'your-name',
-    description: 'Simple greeting agent for testing',
-    skills: { 'text-formatter': '^1.0.0' },
-    config: { timeout: 30000 },
-    checksum: 'abc123def456...'
-  },
-  errors: []
-}
+**Verify the package:**
+```bash
+ls -lh test-agent-1.0.0.tar.gz
+tar -tzf test-agent-1.0.0.tar.gz | head -5
 ```
 
-### Step 3: Scan for Security Issues
+---
 
-Before publishing, scan your agent for security vulnerabilities:
+## Step 3: Scan for Security Issues
 
 ```bash
-cat > scan-agent.js << 'EOF'
+node -e "
 import { SecurityScanner } from './dist/security/scanner.js';
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 
-const agentPath = './my-first-agent';
 const scanner = new SecurityScanner();
+const agentPath = '../my-test-agent';
 
-// Read all files
 const charter = fs.readFileSync(path.join(agentPath, 'charter.md'), 'utf8');
 const manifest = fs.readFileSync(path.join(agentPath, 'manifest.json'), 'utf8');
 
-const scan = scanner.scan({
+const result = scanner.scan({
   chartContent: charter,
   manifestContent: manifest,
   configContent: '',
   skillsContent: ''
 });
 
-console.log('Security scan results:');
-console.log(JSON.stringify(scan, null, 2));
-EOF
-
-node scan-agent.js
-```
-
-**Expected output:**
-```
-Security scan results:
-{
-  passed: true,
-  issues: [],
-  riskLevel: "LOW",
-  timestamp: "2025-04-12T10:30:00Z",
-  summary: "No security issues detected"
+console.log('Status:', result.passed ? '✓ PASS' : '✗ FAIL');
+console.log('Issues:', result.issues.length);
+if (result.issues.length > 0) {
+  result.issues.forEach(issue => {
+    console.log('  -', issue.message);
+  });
 }
-```
-
-### Step 4: Package Your Agent
-
-Create a distributable `.tar.gz` bundle:
-
-```bash
-cat > package-agent.js << 'EOF'
-import { AgentPackager } from './dist/package/packager.js';
-import * as path from 'path';
-
-const packager = new AgentPackager();
-const agentPath = path.resolve('./my-first-agent');
-const outputPath = './hello-agent-1.0.0.tar.gz';
-
-await packager.package(agentPath, outputPath);
-console.log(`Agent packaged successfully: ${outputPath}`);
-EOF
-
-node package-agent.js
+"
 ```
 
 **Expected output:**
 ```
-Agent packaged successfully: hello-agent-1.0.0.tar.gz
+Status: ✓ PASS
+Issues: 0
 ```
 
-Verify the package:
-```bash
-ls -lh hello-agent-1.0.0.tar.gz
-# -rw-r--r--  1 user  staff  2.5K Apr 12 10:35 hello-agent-1.0.0.tar.gz
+---
 
-tar -tzf hello-agent-1.0.0.tar.gz | head -10
-# manifest.json
-# charter.md
-# skills/
-# config/
-```
-
-### Step 5: Publish to Registry
-
-Upload your agent package to the registry (backed by GitHub Releases).
-
-The `AgentPublisher` constructor requires three collaborator objects — a packager, a security scanner, and a registry client:
+## Step 4: Publish to Registry
 
 ```bash
-cat > publish-agent.js << 'EOF'
+node -e "
 import { AgentPublisher } from './dist/registry/publisher.js';
 import { AgentPackager } from './dist/package/packager.js';
 import { SecurityScanner } from './dist/security/scanner.js';
@@ -291,42 +216,109 @@ const registry = new GitHubRegistry({
 });
 
 const publisher = new AgentPublisher(packager, scanner, registry);
+const result = await publisher.publish('../my-test-agent');
 
-// publish() takes the agent directory path and handles
-// packaging, scanning, and uploading in one step
-const result = await publisher.publish('./my-first-agent');
-
-console.log('Published successfully:');
-console.log(JSON.stringify(result, null, 2));
-EOF
-
-node publish-agent.js
+console.log('Published successfully!');
+console.log('Name:', result.name);
+console.log('Version:', result.version);
+console.log('URL:', result.releaseUrl);
+"
 ```
 
 **Expected output:**
 ```
-Published successfully:
-{
-  name: 'hello-agent',
-  version: '1.0.0',
-  releaseUrl: 'https://github.com/your-org/my-agent-registry/releases/tag/agent-hello-agent-1.0.0',
-  publishedAt: '2025-04-12T10:40:00Z',
-  checksum: 'sha256:abc123...'
-}
+Published successfully!
+Name: test-agent
+Version: 1.0.0
+URL: https://github.com/your-org/my-agent-registry/releases/tag/agent-test-agent-1.0.0
 ```
 
-✅ **Your agent is now published!**
+Check your registry repo — you should see a new GitHub Release!
 
 ---
 
-## Walkthrough 2: Install an Agent from Registry
-
-### Step 1: Search the Registry
-
-Find available agents:
+## Step 5: Install from Registry
 
 ```bash
-cat > search-agents.js << 'EOF'
+node -e "
+import { AgentInstaller } from './dist/install/installer.js';
+
+const installer = new AgentInstaller({
+  squadDir: './.squad',
+  registryOwner: process.env.GITHUB_REGISTRY_OWNER,
+  registryRepo: process.env.GITHUB_REGISTRY_REPO,
+  githubToken: process.env.GITHUB_TOKEN
+});
+
+const result = await installer.install({ agent: 'test-agent@1.0.0' });
+
+console.log('Installation complete!');
+console.log('Agent:', result.agent);
+console.log('Version:', result.version);
+console.log('Path:', result.installPath);
+"
+```
+
+**Expected output:**
+```
+Installation complete!
+Agent: test-agent
+Version: 1.0.0
+Path: ./.squad/agents/test-agent
+```
+
+**Verify the installation:**
+```bash
+ls -la .squad/agents/test-agent/
+cat .squad/agents/test-agent/.agent-metadata.json
+```
+
+You should see:
+- `manifest.json`
+- `charter.md`
+- `.agent-metadata.json`
+- `skills/` directory
+- `config/` directory
+
+---
+
+## ✅ Complete!
+
+Your agent is now:
+1. ✓ Packaged as a distributable bundle
+2. ✓ Scanned for security issues
+3. ✓ Published to your private registry
+4. ✓ Installed and ready to use
+
+---
+
+## Common Tasks
+
+### Publish Version 2.0
+
+Update `my-test-agent/manifest.json`:
+```json
+{
+  "name": "test-agent",
+  "version": "2.0.0",
+  "author": "your-name",
+  "description": "An improved test agent",
+  "skills": {
+    "text-processor": "^1.0.0",
+    "sentiment-analyzer": "^1.0.0"
+  },
+  "config": {
+    "timeout": 30000
+  }
+}
+```
+
+Repeat steps 2–4 (package → scan → publish).
+
+### Search for Available Agents
+
+```bash
+node -e "
 import { RegistryBrowser } from './dist/registry/browser.js';
 
 const browser = new RegistryBrowser({
@@ -335,36 +327,18 @@ const browser = new RegistryBrowser({
   registryRepo: process.env.GITHUB_REGISTRY_REPO
 });
 
-const results = await browser.search('hello');
-console.log('Search results:');
-console.log(JSON.stringify(results, null, 2));
-EOF
-
-node search-agents.js
+const results = await browser.search('test');
+console.log('Results:');
+results.agents.forEach(agent => {
+  console.log('  -', agent.name, '(' + agent.versions.join(', ') + ')');
+});
+"
 ```
 
-**Expected output:**
-```
-Search results:
-{
-  agents: [
-    {
-      name: 'hello-agent',
-      author: 'your-name',
-      description: 'Simple greeting agent for testing',
-      versions: ['1.0.0'],
-      latestVersion: '1.0.0'
-    }
-  ]
-}
-```
-
-### Step 2: Install an Agent
-
-Install an agent with version pinning:
+### Check for Updates
 
 ```bash
-cat > install-agent.js << 'EOF'
+node -e "
 import { AgentInstaller } from './dist/install/installer.js';
 
 const installer = new AgentInstaller({
@@ -374,239 +348,68 @@ const installer = new AgentInstaller({
   githubToken: process.env.GITHUB_TOKEN
 });
 
-const result = await installer.install({
-  agent: 'hello-agent@1.0.0'
-});
-
-console.log('Installation complete:');
-console.log(JSON.stringify(result, null, 2));
-EOF
-
-node install-agent.js
-```
-
-**Expected output:**
-```
-Installation complete:
-{
-  agent: 'hello-agent',
-  version: '1.0.0',
-  installPath: './.squad/agents/hello-agent',
-  pinned: true,
-  installedAt: '2025-04-12T10:45:00Z',
-  metadata: {
-    author: 'your-name',
-    description: 'Simple greeting agent for testing',
-    skills: { 'text-formatter': '^1.0.0' }
-  }
-}
-```
-
-### Step 3: Verify Installation
-
-Check that your agent is installed:
-
-```bash
-ls -la .squad/agents/hello-agent/
-# -rw-r--r--  manifest.json
-# -rw-r--r--  charter.md
-# -rw-r--r--  .agent-metadata.json
-# drwxr-xr-x  skills/
-# drwxr-xr-x  config/
-
-cat .squad/agents/hello-agent/.agent-metadata.json
-# {
-#   "agent": "hello-agent",
-#   "version": "1.0.0",
-#   "pinned": true,
-#   "installedAt": "2025-04-12T10:45:00Z"
-# }
-```
-
-✅ **Your agent is installed and ready to use!**
-
----
-
-## Common Next Steps
-
-### Publish Version 2.0
-
-After making changes to your agent:
-
-```bash
-# Update version in manifest.json
-cat > my-first-agent/manifest.json << 'EOF'
-{
-  "name": "hello-agent",
-  "version": "2.0.0",
-  "author": "your-name",
-  "description": "Enhanced greeting agent with more features",
-  "skills": {
-    "text-formatter": "^1.0.0",
-    "sentiment-analyzer": "^1.0.0"
-  },
-  "config": {
-    "timeout": 30000
-  }
-}
-EOF
-
-# Scan, package, and publish as before
-npm run build
-node scan-agent.js
-node package-agent.js
-# (update package-agent.js to reference v2.0.0)
-node publish-agent.js
-```
-
-### Check for Agent Updates
-
-```bash
-cat > check-updates.js << 'EOF'
-import { AgentInstaller } from './dist/install/installer.js';
-
-const installer = new AgentInstaller({
-  squadDir: './.squad',
-  registryOwner: process.env.GITHUB_REGISTRY_OWNER,
-  registryRepo: process.env.GITHUB_REGISTRY_REPO,
-  githubToken: process.env.GITHUB_TOKEN
-});
-
-const updates = await installer.checkUpdates('hello-agent');
-console.log('Available updates:');
-console.log(JSON.stringify(updates, null, 2));
-EOF
-
-node check-updates.js
+const updates = await installer.checkUpdates('test-agent');
+console.log('Available versions:', updates);
+"
 ```
 
 ### Uninstall an Agent
 
 ```bash
-cat > uninstall-agent.js << 'EOF'
+node -e "
 import { AgentInstaller } from './dist/install/installer.js';
 
 const installer = new AgentInstaller({
   squadDir: './.squad'
 });
 
-await installer.uninstall('hello-agent');
-console.log('Agent uninstalled successfully');
-EOF
-
-node uninstall-agent.js
+await installer.uninstall('test-agent');
+console.log('Uninstalled');
+"
 ```
 
 ---
 
 ## Troubleshooting
 
-### "GITHUB_TOKEN not found"
+### "GITHUB_TOKEN not set"
 ```bash
-# Set your token before running scripts
 export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-echo $GITHUB_TOKEN  # Verify it's set
+echo \$GITHUB_TOKEN  # Verify it's set
 ```
 
-### "Registry index not found"
-Make sure your registry repository has `.registry/agents.json` initialized:
+### "Registry not found"
+Ensure `.registry/agents.json` exists in your registry repo:
 ```bash
-cd path/to/my-agent-registry
-mkdir -p .registry
-cat > .registry/agents.json << 'EOF'
-{ "agents": [], "metadata": { "initialized": true, "version": "1.0.0" } }
-EOF
-git add .registry/agents.json
-git commit -m "Initialize registry"
-git push
+cd ../my-agent-registry
+ls -la .registry/agents.json
 ```
 
 ### "Manifest validation failed"
-Ensure your `manifest.json` has all required fields:
-- `name` (string, must be valid npm package name)
-- `version` (string, must be valid semver like `1.0.0`)
-- `author` (string)
-- `description` (string)
-- `skills` (object with skill names and version constraints)
+Check required fields in `manifest.json`:
+- `name` — must be valid npm package name (lowercase, no spaces)
+- `version` — must be valid semver (e.g., `1.0.0`)
+- `author` — string
+- `description` — string
+- `skills` — object (can be empty `{}`)
+- `config` — object (can be empty `{}`)
 
 ### "Security scan failed"
-Check for common issues:
-- No hardcoded API keys or secrets
-- No `eval()` or dangerous `require()` patterns
-- No unexpected network calls
+Common issues:
+- Hardcoded API keys or credentials
+- Dangerous patterns like `eval()` or `require()`
+- Unexpected network calls
 
-If the issue is a false positive, add it to your allowlist before publishing.
-
----
-
-## Full Example: Complete Publish → Install Workflow
-
-Combine all steps into one script:
-
-```bash
-# 1. Create and validate
-mkdir demo-agent
-cat > demo-agent/manifest.json << 'EOF'
-{"name":"demo","version":"1.0.0","author":"test","description":"Demo","skills":{},"config":{}}
-EOF
-touch demo-agent/charter.md demo-agent/config/.gitkeep demo-agent/skills/.gitkeep
-
-# 2. Build marketplace
-npm run build
-
-# 3. Scan (assuming no issues)
-# 4. Package
-node -e "
-import { AgentPackager } from './dist/package/packager.js';
-const p = new AgentPackager();
-await p.package('./demo-agent', './demo-1.0.0.tar.gz');
-console.log('Packaged');
-"
-
-# 5. Publish
-node -e "
-import { AgentPublisher } from './dist/registry/publisher.js';
-import { AgentPackager } from './dist/package/packager.js';
-import { SecurityScanner } from './dist/security/scanner.js';
-import { GitHubRegistry } from './dist/registry/github-registry.js';
-const packager = new AgentPackager();
-const scanner = new SecurityScanner();
-const registry = new GitHubRegistry({
-  githubToken: process.env.GITHUB_TOKEN,
-  registryOwner: process.env.GITHUB_REGISTRY_OWNER,
-  registryRepo: process.env.GITHUB_REGISTRY_REPO
-});
-const pub = new AgentPublisher(packager, scanner, registry);
-const r = await pub.publish('./demo-agent');
-console.log('Published:', r.name, r.version);
-"
-
-# 6. Install
-node -e "
-import { AgentInstaller } from './dist/install/installer.js';
-const i = new AgentInstaller({
-  squadDir: './.squad',
-  registryOwner: process.env.GITHUB_REGISTRY_OWNER,
-  registryRepo: process.env.GITHUB_REGISTRY_REPO,
-  githubToken: process.env.GITHUB_TOKEN
-});
-const r = await i.install({ agent: 'demo@1.0.0' });
-console.log('Installed:', r.agent, r.version);
-"
-
-# 7. Verify
-ls -la .squad/agents/demo/
-```
+Review the scan output and fix issues before republishing.
 
 ---
 
 ## Resources
 
-- **[README.md](./README.md)**: Full project documentation
-- **[PLAN.md](./PLAN.md)**: Technical architecture and roadmap
-- **[Squad SDK Documentation](https://github.com/bradygaster/squad-sdk)**: Core SDK reference
-- **Test Examples**: Check `test/integration/` for complete workflow examples
+- **[README.md](./README.md)** — Full documentation
+- **[GitHub Personal Access Token](https://github.com/settings/tokens)** — Generate tokens
+- **Test Examples** — Check `test/integration/` for more workflows
 
 ---
 
-Happy publishing! 🚀
+**Ready to publish? Start with Step 1!** 🚀
