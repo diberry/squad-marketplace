@@ -1,0 +1,13 @@
+{
+  "name": "example-agent",
+  "version": "1.0.0",
+  "author": "test-author",
+  "description": "Example agent for testing",
+  "skills": {
+    "security-reviewer": "^1.0.0",
+    "docs-writer": "^2.0.0"
+  },
+  "config": {
+    "timeout": 30000
+  }
+}

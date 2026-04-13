@@ -1,0 +1,22 @@
+{
+  "name": "project-squad-sdk-example-marketplace",
+  "version": "0.1.0",
+  "description": "Private enterprise agent registry built on Squad SDK",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "@bradygaster/squad-sdk": "^0.1.0",
+    "@bradygaster/squad-cli": "^0.1.0"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
