@@ -1,0 +1,12 @@
+{
+  "name": "sample-agent",
+  "version": "1.0.0",
+  "author": "squad-team",
+  "description": "A minimal sample agent for testing the marketplace CLI",
+  "skills": {
+    "text-processor": "^1.0.0"
+  },
+  "config": {
+    "timeout": 30000
+  }
+}
