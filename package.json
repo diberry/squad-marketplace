@@ -11,12 +11,12 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@bradygaster/squad-sdk": "^0.1.0",
-    "@bradygaster/squad-cli": "^0.1.0"
+    "semver": "^7.6.0"
   },
   "devDependencies": {
     "vitest": "^1.0.0",
     "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "@types/semver": "^7.5.0"
   }
 }

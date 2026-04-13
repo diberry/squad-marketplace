@@ -3,7 +3,8 @@
  * Fluent API to construct agent manifests programmatically.
  */
 
-import type { AgentManifest, SkillDependency } from './types';
+import type { AgentManifest, SkillDependency } from './types.js';
+import { ManifestValidator } from './validator.js';
 
 export class ManifestBuilder {
   private manifest: Partial<AgentManifest> = {};
@@ -33,8 +34,13 @@ export class ManifestBuilder {
     return this;
   }
 
+  config(config: Record<string, unknown>): this {
+    this.manifest.config = config;
+    return this;
+  }
+
   build(): AgentManifest {
-    // TODO: Implement build with validation and checksum
-    throw new Error('Not implemented');
+    const validator = new ManifestValidator();
+    return validator.validate(this.manifest);
   }
 }

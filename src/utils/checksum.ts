@@ -3,14 +3,14 @@
  * File integrity verification.
  */
 
+import { createHash } from 'node:crypto';
+
 export class ChecksumCalculator {
-  static calculateSHA256(data: Buffer): string {
-    // TODO: Implement SHA256 checksum calculation
-    throw new Error('Not implemented');
+  static calculateSHA256(data: Buffer | string): string {
+    return createHash('sha256').update(data).digest('hex');
   }
 
-  static verify(data: Buffer, expectedChecksum: string): boolean {
-    // TODO: Implement checksum verification
-    throw new Error('Not implemented');
+  static verify(data: Buffer | string, expectedChecksum: string): boolean {
+    return ChecksumCalculator.calculateSHA256(data) === expectedChecksum;
   }
 }
